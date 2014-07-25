@@ -1,5 +1,3 @@
-var app = window.KeyQuiz = window.KeyQuiz || { };
-
 var degrees = [
     'I',
     'II',
@@ -14,7 +12,7 @@ function isMajory(keyFn) {
     return keyFn.quality == 'Major' || keyFn.quality == 'Major7' || keyFn.quality == 'Dominant7';
 }
 
-var KeyFunction = app.KeyFunction = function(degree, accidental, quality) {
+var KeyFunction = exports.KeyFunction = function(degree, accidental, quality) {
     this.degree = degree;
     this.accidental = accidental;
     this.quality = quality;
@@ -45,7 +43,7 @@ var KeyFunction = app.KeyFunction = function(degree, accidental, quality) {
 
     this.toInterval = function() {
         var steps = [ 0, 2, 4, 5, 7, 9, 11, 12 ];
-        return new app.Interval(this.degree, steps[this.degree] + this.accidental);
+        return new exports.Interval(this.degree, steps[this.degree] + this.accidental);
     }
 };
 

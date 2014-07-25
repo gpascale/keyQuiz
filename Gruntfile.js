@@ -95,9 +95,9 @@ module.exports = function(grunt) {
             src: ['public/js/templates.js', 'src/js/**/*.js'],
             dest: 'public/js/keyQuiz.js',
             options: {
-                banner: ';(function() {\n',
+                banner: ';(function(app) {\n',
                 separator: '\n})();\n(function() {\n',
-                footer: '})();\n'
+                footer: '})((typeof exports === "undefined") ? (window.KeyQuiz = window.KeyQuiz || { }) : exports);\n'
             }
         }
     });
@@ -129,7 +129,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.config('watch', {
         code: {
-            files: ['src/**/*', 'ext/**/*', 'Gruntfile.js'],
+            files: ['src/**/*', 'ext/**/*', 'Gruntfile.js', './*-app.js'],
             tasks: ['default'],
             options: { atBegin: true }
         },

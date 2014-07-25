@@ -1,5 +1,6 @@
 {
   "name": "keyQuiz",
+  "version": "0.0.1",
   "engines": {
     "npm": "1.2.x"
   },

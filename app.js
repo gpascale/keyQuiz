@@ -5,6 +5,8 @@ var app = express();
 app.use(express.logger());
 var fs = require('fs');
 
+var Note = require('./src/js/Note.js');
+
 app.get('/', function(req, res) {
     fs.readFile(__dirname + '/public/index.html', 'utf8', function(err, text){
         res.send(text);

@@ -1,4 +1,8 @@
-var app = window.KeyQuiz = window.KeyQuiz || { };
+// ##IFDEF NODE
+if (typeof _ === 'undefined') {
+    _ = require('underscore');
+}
+// #ENDIF
 
 var namedIntervals = {
     '0_0': 'Unison',
@@ -23,7 +27,7 @@ _.each(namedIntervals, function(name, intervalKey) {
     intervalsByName[name] = intervalKey;
 });
 
-var Interval = app.Interval = function(letterSteps, steps) {
+var Interval = exports.Interval = function(letterSteps, steps) {
     this.letterSteps = letterSteps;
     this.steps = steps;
     
@@ -45,3 +49,10 @@ Interval.fromName = function(name) {
     var steps = parseInt(intervalKey.substr(sep + 1));
     return new Interval(letterSteps, steps);
 };
+
+Interval.random = function() {
+    while(1) {
+        var intervalName = _.sample(_.values(namedIntervals));
+        return Interval.fromName(intervalName);
+    }
+}

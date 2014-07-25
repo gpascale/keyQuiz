@@ -1,5 +1,9 @@
-;(function() {
-var app = window.KeyQuiz = window.KeyQuiz || { };
+;(function(app) {
+// ##IFDEF NODE
+if (typeof _ === 'undefined') {
+    _ = require('underscore');
+}
+// #ENDIF
 
 var namedIntervals = {
     '0_0': 'Unison',
@@ -24,7 +28,7 @@ _.each(namedIntervals, function(name, intervalKey) {
     intervalsByName[name] = intervalKey;
 });
 
-var Interval = app.Interval = function(letterSteps, steps) {
+var Interval = exports.Interval = function(letterSteps, steps) {
     this.letterSteps = letterSteps;
     this.steps = steps;
     
@@ -46,10 +50,15 @@ Interval.fromName = function(name) {
     var steps = parseInt(intervalKey.substr(sep + 1));
     return new Interval(letterSteps, steps);
 };
+
+Interval.random = function() {
+    while(1) {
+        var intervalName = _.sample(_.values(namedIntervals));
+        return Interval.fromName(intervalName);
+    }
+}
 })();
 (function() {
-var app = window.KeyQuiz = window.KeyQuiz || { };
-
 var degrees = [
     'I',
     'II',
@@ -64,7 +73,7 @@ function isMajory(keyFn) {
     return keyFn.quality == 'Major' || keyFn.quality == 'Major7' || keyFn.quality == 'Dominant7';
 }
 
-var KeyFunction = app.KeyFunction = function(degree, accidental, quality) {
+var KeyFunction = exports.KeyFunction = function(degree, accidental, quality) {
     this.degree = degree;
     this.accidental = accidental;
     this.quality = quality;
@@ -95,7 +104,7 @@ var KeyFunction = app.KeyFunction = function(degree, accidental, quality) {
 
     this.toInterval = function() {
         var steps = [ 0, 2, 4, 5, 7, 9, 11, 12 ];
-        return new app.Interval(this.degree, steps[this.degree] + this.accidental);
+        return new exports.Interval(this.degree, steps[this.degree] + this.accidental);
     }
 };
 
@@ -126,36 +135,78 @@ KeyFunction.fromInterval = function(interval, quality) {
 }
 })();
 (function() {
-var app = window.KeyQuiz = window.KeyQuiz || { };
+// ##IFDEF NODE
+if (typeof _ === 'undefined') {
+    _ = require('underscore');
+}
+// #ENDIF
 
-app.ChordQuality = {
-    Major: 'Major',
-    Minor: 'Minor',
-    Diminished: 'Diminished',
-    Major7: 'Major7',
-    Minor7: 'Minor7',
-    Dominant7: 'Dominant7',
-    Minor7Flat5: 'Minor7Flat5'
+var Note = exports.Note = function(letter, accidental) {
+    if (letter.length > 2) {
+        throw "Invalid note: Must contain a letter in the range A - G and optional accidental (# or b)";
+    }
+    if (!/[A-G]/.test(letter[0].toUpperCase())) {
+        throw "Invalid note. Letter must be in the range A - G";
+    }
+    if (letter.length == 2) {
+        if (letter[1] != '#' && letter[1] != 'b') 
+            throw "Invalid accidental symbol: Must be # or b";
+        this.letter = letter[0].toUpperCase();
+        this.accidental = letter[1] == '#' ? 1 : -1
+    }
+    else {
+        this.letter = letter[0].toUpperCase();
+        this.accidental = accidental || 0;
+    }
+
+    this.add = function(interval) {
+        var steps = interval.steps;
+        var curLetter = this.letter;
+        for (var i = 0; i < interval.letterSteps; ++i) {
+            if (curLetter == 'B' || curLetter == 'E')
+                steps--;
+            else
+                steps -= 2;
+            curLetter = nextLetter(curLetter);
+        }
+        return new exports.Note(curLetter, this.accidental + steps);
+    };
+
+    this.intervalTo = function(otherNote) {
+        var ret = [ 0, 0 ];
+        var curLetter = this.letter
+        while(curLetter != otherNote.letter) {
+            ret[0] += 1;
+            ret[1] += stepsToNextLetter(curLetter);
+            curLetter = nextLetter(curLetter);
+        }
+        return new exports.Interval(ret[0], ret[1] - this.accidental + otherNote.accidental);
+    }
+
+    this.equals = function(otherNote) {
+        return this.letter == otherNote.letter &&
+               this.accidental == otherNote.accidental;
+    }
+
+    this.toString = function() {
+        var accString = '';
+        if (this.accidental < 0)
+            for (var i = 0; i > this.accidental; --i)
+                accString += 'b';
+        else
+            for (var i = 0; i < this.accidental; ++i)
+                accString += '#';
+        return this.letter + accString;
+    }
 };
 
-
-/*
-app.ChordFunction = {
-    I: Interval.Unison,
-    bII: Interval.Minor2nd,
-    II: Interval.Major2nd,
-    bIII: Interval.Minor3rd,
-    III: Interval.Major3rd,
-    IV: Interval.Perfect4th,
-    '#IV': Interval.Augmented4th,
-    bV: Interval.Diminished5th,
-    V: Interval.Perfect5th,
-    bVI: Interval.Minor6th,
-    VI: Interval.Major6th,
-    bVII: Interval.Minor7th,
-    VII: Interval.Major7th
+Note.random = function() {
+    var name = _.sample(['Ab', 'A', 'A#', 'Bb', 'B', 'C', 'C#', 'Db', 
+                         'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#']);
+    return new Note(name);
 };
-*/
+
+// Helpers
 
 function nextLetter(letter) {
     if (letter == 'G')
@@ -172,6 +223,7 @@ function nextLetter(letter) {
         return 'F';
     else if (letter == 'F')
         return 'G';
+    return 'X';
 }
 
 function stepsToNextLetter(letter) {
@@ -184,67 +236,44 @@ function stepsToNextLetter(letter) {
         'F': 2,
         'G': 2
     };
-    return steppage[letter];
+    return steppage[letter] ? steppage[letter] : 0;
 }
+})();
+(function() {
+exports.ChordQuality = {
+    Major: 'Major',
+    Minor: 'Minor',
+    Diminished: 'Diminished',
+    Major7: 'Major7',
+    Minor7: 'Minor7',
+    Dominant7: 'Dominant7',
+    Minor7Flat5: 'Minor7Flat5'
+};
 
-app.Note = function(letter, accidental) {
-    if (letter.length > 2)
-        throw "Invalid letter: " + letter;
-    if (letter.length == 2) {
-        if (letter[1] != '#' && letter[1] != 'b') 
-            throw "Invalid note: " + letter;
-        this.letter = letter[0];
-        this.accidental = letter[1] == '#' ? 1 : -1
-    }
-    else {
-        this.letter = letter;
-        this.accidental = accidental || 0;
-    }
 
-    this.add = function(interval) {
-        var steps = interval.steps;
-        var curLetter = this.letter;
-        for (var i = 0; i < interval.letterSteps; ++i) {
-            if (curLetter == 'B' || curLetter == 'E')
-                steps--;
-            else
-                steps -= 2;
-            curLetter = nextLetter(curLetter);
-        }
-        return new app.Note(curLetter, this.accidental + steps);
-    };
+/*
+exports.ChordFunction = {
+    I: Interval.Unison,
+    bII: Interval.Minor2nd,
+    II: Interval.Major2nd,
+    bIII: Interval.Minor3rd,
+    III: Interval.Major3rd,
+    IV: Interval.Perfect4th,
+    '#IV': Interval.Augmented4th,
+    bV: Interval.Diminished5th,
+    V: Interval.Perfect5th,
+    bVI: Interval.Minor6th,
+    VI: Interval.Major6th,
+    bVII: Interval.Minor7th,
+    VII: Interval.Major7th
+};
+*/
 
-    this.intervalTo = function(otherNote) {
-        var ret = [ 0, 0 ];
-        var curLetter = this.letter
-        while(curLetter != otherNote.letter) {
-            ret[0] += 1;
-            ret[1] += stepsToNextLetter(curLetter);
-            curLetter = nextLetter(curLetter);
-        }
-        return new app.Interval(ret[0], ret[1] - this.accidental + otherNote.accidental);
-    }
 
-    this.equals = function(otherNote) {
-        return this.letter == otherNote.letter &&
-               this.accidental == otherNote.letter;
-    }
-
-    this.toString = function() {
-        var accString = '';
-        if (this.accidental < 0)
-            for (var i = 0; i > this.accidental; --i)
-                accString += 'b';
-        else
-            for (var i = 0; i < this.accidental; ++i)
-                accString += '#';
-        return this.letter + accString;
-    }
-}
 
 $(document).ready(function() {
     $('#container').append('<div class="helloWorld">Hello, World!</div>');
-    app.test.testAll();
+    exports.test.testAll();
     /*var majorKey = [
         Interval.Unison,
         Interval.Major2nd,
@@ -256,10 +285,10 @@ $(document).ready(function() {
     ];*/
     
 /*
-    var notes = [ new app.Note('D'), new app.Note('G'), new app.Note('C'), new app.Note('Bb') ];
+    var notes = [ new exports.Note('D'), new exports.Note('G'), new exports.Note('C'), new exports.Note('Bb') ];
     _.each(notes, function(note) {
         var interval = key.intervalTo(note);
-        var fn = app.KeyFunction.fromInterval(interval, 'Minor7');
+        var fn = exports.KeyFunction.fromInterval(interval, 'Minor7');
         console.log(fn.toString());
     });
 */
@@ -268,11 +297,9 @@ $(document).ready(function() {
 });
 })();
 (function() {
-var app = window.KeyQuiz = (window.KeyQuiz || {});
-
 var fileVersion = 1;
 
-app.Progression = Backbone.Model.extend({
+exports.Progression = Backbone.Model.extend({
     defaults: function() {
         return { 
             key: 'A',
@@ -347,4 +374,4 @@ app.test.testAll = function() {
     app.test.printAllKeys();
     app.test.testIntervals();
     app.test.test251s();
-};})();
+};})((typeof exports === "undefined") ? (window.KeyQuiz = window.KeyQuiz || { }) : exports);
