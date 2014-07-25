@@ -85,8 +85,10 @@ module.exports = function(grunt) {
             dest: 'public/css/keyQuiz.css'
         },
         extjs: {
-            src: [ 'public/ext/js/jquery.min-1.10.2.js',
-                   'public/ext/js/underscore-min-1.5.1.js'],
+            src: [ 'ext/js/jquery.min-1.10.2.js',
+                   'ext/js/underscore-min-1.5.1.js',
+                   'ext/js/backbone-min.js',
+                   'ext/js/backbone.marionette.min.js' ],
             dest: 'public/js/deps.js'
         },
         js: {
