@@ -28,11 +28,11 @@ exports.ChordFunction = {
 */
 
 
-
+/*
 $(document).ready(function() {
     $('#container').append('<div class="helloWorld">Hello, World!</div>');
     exports.test.testAll();
-    /*var majorKey = [
+    var majorKey = [
         Interval.Unison,
         Interval.Major2nd,
         Interval.Minor3rd,
@@ -40,16 +40,14 @@ $(document).ready(function() {
         Interval.Perfect5th,
         Interval.Major6th,
         Interval.Major7th
-    ];*/
+    ];
     
-/*
+
     var notes = [ new exports.Note('D'), new exports.Note('G'), new exports.Note('C'), new exports.Note('Bb') ];
     _.each(notes, function(note) {
         var interval = key.intervalTo(note);
         var fn = exports.KeyFunction.fromInterval(interval, 'Minor7');
         console.log(fn.toString());
     });
-*/
-
-
 });
+*/

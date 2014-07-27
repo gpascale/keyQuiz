@@ -62,7 +62,7 @@ module.exports = function(grunt) {
     grunt.config('jst', {
         compile: {
             options: {
-                namespace: 'keyQuiz.Templates',
+                namespace: 'KeyQuiz.Templates',
                 processName: function(filename) {
                     return path.basename(filename, '.tmpl');
                 },
@@ -70,7 +70,7 @@ module.exports = function(grunt) {
                 templateSettings: { variable: 'data' }
             },
             files: {
-                "public/js/templates.js": ["src/client/templates/*.tmpl"]
+                "public/js/templates.js": ["src/templates/*.tmpl"]
             }
         }
     });
@@ -79,6 +79,8 @@ module.exports = function(grunt) {
     // Concat
     /*************************************************************************/    
     grunt.loadNpmTasks('grunt-contrib-concat');
+    var banner = ';(function(exports) {\n';
+    var footer = '})((typeof exports === "undefined") ? (window.KeyQuiz = window.KeyQuiz || { }) : exports);\n';
     grunt.config('concat', {
         less: {
             src: 'public/css/*.css',
@@ -86,7 +88,7 @@ module.exports = function(grunt) {
         },
         extjs: {
             src: [ 'ext/js/jquery.min-1.10.2.js',
-                   'ext/js/underscore-min-1.5.1.js',
+                   'ext/js/underscore-min-1.6.0.js',
                    'ext/js/backbone-min.js',
                    'ext/js/backbone.marionette.min.js' ],
             dest: 'public/js/deps.js'
@@ -95,9 +97,9 @@ module.exports = function(grunt) {
             src: ['public/js/templates.js', 'src/js/**/*.js'],
             dest: 'public/js/keyQuiz.js',
             options: {
-                banner: ';(function(app) {\n',
-                separator: '\n})();\n(function() {\n',
-                footer: '})((typeof exports === "undefined") ? (window.KeyQuiz = window.KeyQuiz || { }) : exports);\n'
+                banner: banner,
+                separator: '\n' + footer + banner,
+                footer: footer
             }
         }
     });

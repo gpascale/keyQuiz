@@ -5,6 +5,9 @@ if (typeof _ === 'undefined') {
 // #ENDIF
 
 var Note = exports.Note = function(letter, accidental) {
+    if (!letter) {
+        throw "Invalid note. Must contain a letter";
+    }
     if (letter.length > 2) {
         throw "Invalid note: Must contain a letter in the range A - G and optional accidental (# or b)";
     }

@@ -7,6 +7,7 @@ TAGS
 .emacs*
 .projectile
 build/
+public/
 *.sublime*
 stageLocal/files
 node_modules/grunt/
