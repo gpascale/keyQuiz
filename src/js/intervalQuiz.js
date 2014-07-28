@@ -1,5 +1,6 @@
 var Note = exports.Note;
 var Interval = exports.Interval;
+var KeyFunction = exports.KeyFunction;
 
 var interval;
 var startingNote;
@@ -58,9 +59,14 @@ $(document).ready(function() {
 });
 
 function askOne() {
-    interval = Interval.random();
+    var key = new Note(_.sample([ 'C', 'F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb' ]));//, 'F', 'Bb', 'G', 'D' ]));
+    var startingDegree = _.random(0, 6);
+    var endingDegree = _.random(0, 6);
+    var startingKeyFn = new KeyFunction(startingDegree, 0, 'Major7');
+    var endingKeyFn = new KeyFunction(endingDegree, 0, 'Major7');
+    interval = Interval.fromName('Perfect4th');//startingKeyFn.intervalTo(endingKeyFn);
     $('.interval').text(interval.name());
-    note = Note.random();
+    note = key.add(startingKeyFn.toInterval());
     $('.note.lhs span').text(note.toString());
     $('.note.rhs span').text('');
 }
