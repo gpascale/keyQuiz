@@ -45,9 +45,22 @@ var KeyFunction = exports.KeyFunction = function(degree, accidental, quality) {
         var steps = [ 0, 2, 4, 5, 7, 9, 11, 12 ];
         return new exports.Interval(this.degree, steps[this.degree] + this.accidental);
     }
+
+    this.intervalTo = function(otherKeyFn) {
+        var scale = [ 2, 2, 1, 2, 2, 2, 1 ];
+        var letterSteps = 0;
+        var steps = 0;
+        var curDegree = this.degree;
+        while (curDegree != otherKeyFn.degree) {
+            ++letterSteps;
+            steps += scale[curDegree];
+            curDegree = (curDegree + 1) % 7;
+        }
+        return new exports.Interval(letterSteps, steps - this.accidental + otherKeyFn.accidental);
+    }
 };
 
-KeyFunction.fromInterval = function(interval, quality) {
+exports.KeyFunction.fromInterval = function(interval, quality) {
     var key = interval.letterSteps + '_' + interval.steps;
     var validIntervals = {
         '0_0': [0, 0],

@@ -12,3 +12,4 @@ public/
 stageLocal/files
 node_modules/grunt/
 node_modules/grunt-ant-sfdc/tmp/
+.bin/
