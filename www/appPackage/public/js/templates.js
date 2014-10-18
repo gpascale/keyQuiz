@@ -1,0 +1,4 @@
+this["KeyQuiz"] = this["KeyQuiz"] || {};
+this["KeyQuiz"]["Templates"] = this["KeyQuiz"]["Templates"] || {};
+
+this["KeyQuiz"]["Templates"]["intervalQuiz"] = function(data) {var __t, __p = '', __e = _.escape;__p += '<div class="intervalQuiz">\n    <div class="modeSelector">\n        <select>\n            <option value="4ths">Circle of 4ths</option>\n            <option value="5ths">Circle of 5ths</option>\n            <option value="Key">Key Degrees</option>\n            <option value="Diatonic Intervals">Diatonic Intervals</option>\n        </select>\n    </div>\n    <div class="note lhs">\n        <span>\n            Bb\n        </span>\n    </div>\n    <div class="interval">\n        <span>\n            P 5th\n        </span>\n    </div>\n    <div class="note rhs">\n        <span></span>\n    </div>\n    <div class="result">\n    </div>\n</div>';return __p};
