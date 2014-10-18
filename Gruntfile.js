@@ -7,7 +7,7 @@ module.exports = function(grunt) {
     // Clean
     /*************************************************************************/
     grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.config('clean', [ 'public' ]);
+    grunt.config('clean', [ 'www' ]);
 
     /*************************************************************************/
     // Less
@@ -21,7 +21,7 @@ module.exports = function(grunt) {
                expand: true,
                cwd: lessRoot,
                src: [lessPattern],
-               dest: 'public/css',
+               dest: 'www/css',
                ext: '.css'
             }],
         },
@@ -45,13 +45,13 @@ module.exports = function(grunt) {
             expand: true,
             cwd: 'ext',
             src: '**',
-            dest: 'public/ext'
+            dest: 'www/ext'
         },
         cname: {
             expand: true,
             cwd: 'src',
             src: 'CNAME',
-            dest: 'public/'
+            dest: 'www/'
         }
     });
 
@@ -70,7 +70,7 @@ module.exports = function(grunt) {
                 templateSettings: { variable: 'data' }
             },
             files: {
-                "public/js/templates.js": ["src/templates/*.tmpl"]
+                "www/js/templates.js": ["src/templates/*.tmpl"]
             }
         }
     });
@@ -83,19 +83,19 @@ module.exports = function(grunt) {
     var footer = '})((typeof exports === "undefined") ? (window.KeyQuiz = window.KeyQuiz || { }) : exports);\n';
     grunt.config('concat', {
         less: {
-            src: 'public/css/*.css',
-            dest: 'public/css/keyQuiz.css'
+            src: 'www/css/*.css',
+            dest: 'www/css/keyQuiz.css'
         },
         extjs: {
             src: [ 'ext/js/jquery.min-1.10.2.js',
                    'ext/js/underscore-min-1.6.0.js',
                    'ext/js/backbone-min.js',
                    'ext/js/backbone.marionette.min.js' ],
-            dest: 'public/js/deps.js'
+            dest: 'www/js/deps.js'
         },
         js: {
-            src: ['public/js/templates.js', 'src/js/**/*.js'],
-            dest: 'public/js/keyQuiz.js',
+            src: ['www/js/templates.js', 'src/js/**/*.js'],
+            dest: 'www/js/keyQuiz.js',
             options: {
                 banner: banner,
                 separator: '\n' + footer + banner,
