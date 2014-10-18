@@ -10,7 +10,7 @@ var Note = require(__dirname + '/Note.js');
 app.get('/', function(req, res) {
     console.log("foo " + __dirname);
     fs.readFile(__dirname + '/public/html/index.html', 'utf8', function(err, text) {
-        console.log(text);
+        console.log('text ' + text);
         res.send(text);
     });
 });
