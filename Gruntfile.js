@@ -7,51 +7,37 @@ module.exports = function(grunt) {
     // Clean
     /*************************************************************************/
     grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.config('clean', [ 'public' ]);
+    grunt.config('clean', [ 'build' ]);
 
     /*************************************************************************/
-    // Less
+    // Less - Compile less files and move to the intermediates folder
     /*************************************************************************/
     grunt.loadNpmTasks('grunt-contrib-less');
-    var lessRoot = 'src/less/';
-    var lessPattern = '**/*.less';
     grunt.config('less', {
-        all: {
-           files: [{
-               expand: true,
-               cwd: lessRoot,
-               src: [lessPattern],
-               dest: 'public/css',
-               ext: '.css'
-            }],
-        },
-        options: {
-            cleancss: true
-        }
-    });
+        all: {
+            files: {
+                'build/intermediates/css/KeyQuiz.css': 'src/client/less/*.less',
+            }   
+        },
+        options: {
+            cleancss: true,
+            paths: ['src/client/less']
+        }
+    });
 
     /*************************************************************************/
-    // Js / Html / External client stuff
+    // Compile React
     /*************************************************************************/
-    grunt.loadNpmTasks('grunt-contrib-copy');
-    grunt.config('copy', {
-        html: {
-            expand: true,
-            cwd: 'src',
-            src: 'index.html',
-            dest: 'public'
-        },
-        ext: {
-            expand: true,
-            cwd: 'ext',
-            src: '**',
-            dest: 'public/ext'
-        },
-        cname: {
-            expand: true,
-            cwd: 'src',
-            src: 'CNAME',
-            dest: 'public/'
+    grunt.loadNpmTasks('grunt-react');
+    grunt.config('react', {
+        dynamic_mappings: {
+            files: [ {
+                expand: true,
+                cwd: 'src/client/js',
+                src: ['**/*.{js,jsx}'],
+                dest: 'build/intermediates/js/client',
+                ext: '.js'
+            } ]
         }
     });
 
@@ -70,8 +56,33 @@ module.exports = function(grunt) {
                 templateSettings: { variable: 'data' }
             },
             files: {
-                "public/js/templates.js": ["src/templates/*.tmpl"]
+                "build/intermediates/js/client/templates.js": ["src/client/templates/*.tmpl"]
             }
+        }
+    });
+
+    /*************************************************************************/
+    // Copy fonts
+    /*************************************************************************/
+    grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.config('copy', {
+        fonts: {
+            src: 'ext/fonts/*',
+            dest: 'build/intermediates/fonts/',
+            expand: true,
+            flatten: true
+        },
+        srcmaps: {
+            src: 'ext/js/*.map',
+            dest: 'build/intermediates/js/client/',
+            expand: true,
+            flatten: true
+        },
+        sharedjs: {
+            src: 'src/shared/js/**/*.js',
+            dest: 'build/intermediates/js/server/',
+            expand: true,
+            flatten: true  
         }
     });
 
@@ -82,20 +93,25 @@ module.exports = function(grunt) {
     var banner = ';(function(exports) {\n';
     var footer = '})((typeof exports === "undefined") ? (window.KeyQuiz = window.KeyQuiz || { }) : exports);\n';
     grunt.config('concat', {
-        less: {
-            src: 'public/css/*.css',
-            dest: 'public/css/keyQuiz.css'
-        },
         extjs: {
             src: [ 'ext/js/jquery.min-1.10.2.js',
                    'ext/js/underscore-min-1.6.0.js',
                    'ext/js/backbone-min.js',
-                   'ext/js/backbone.marionette.min.js' ],
-            dest: 'public/js/deps.js'
+                   'ext/js/backbone.marionette.min.js',
+                   'ext/js/react-0.11.1.min.jsq' ],
+            dest: 'build/intermediates/js/client/KeyQuiz.external.js'
+        },
+        extCss: {
+            src: [ 'ext/css/bootstrap.min.css',
+                   'ext/css/bootstrap-theme.min.css',
+                   'ext/css/bootstrap.min.css.map',
+                   'ext/css/bootstrap-theme.min.css.map',
+                   'ext/css/font-awesome.min.css' ],
+            dest: 'build/intermediates/css/KeyQuiz.external.css'
         },
         js: {
-            src: ['public/js/templates.js', 'src/js/**/*.js'],
-            dest: 'public/js/keyQuiz.js',
+            src: ['build/intermediates/js/client/templates.js', 'src/shared/js/**/*.js', 'src/client/js/**/*.js',],
+            dest: 'build/intermediates/js/client/KeyQuiz.js',
             options: {
                 banner: banner,
                 separator: '\n' + footer + banner,
@@ -105,49 +121,89 @@ module.exports = function(grunt) {
     });
 
     /*************************************************************************/
-    // Restart node app
+    // App Packaging
     /*************************************************************************/
+    grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.registerTask('packageApp', function() {
+        var packageRoot = 'build/appPackage/'
+        grunt.config.set('copy.app', {
+            src: [ 'src/server/app.js', 'src/server/package.json', 'build/intermediates/js/server/*.js' ],
+            dest: packageRoot,
+            expand: true,
+            flatten: true
+        });
+        grunt.config.set('copy.appNodeModules', {
+            cwd: 'src/server/',
+            src: 'node_modules/**/*',
+            dest: packageRoot,
+            expand: true
+        });
+        grunt.config.set('copy.appHtml', {
+            src: 'src/server/**/*.html',
+            dest: packageRoot + 'public/html',
+            expand: true,
+            flatten: true
+        });
+        grunt.config.set('copy.appJs', {
+            src: 'build/intermediates/js/client/*',
+            dest: packageRoot + 'public/js',
+            expand: true,
+            flatten: true
+        });
+        grunt.config.set('copy.appCss', {
+            src: 'build/intermediates/**/*{.css,.css.map}',
+            dest: packageRoot + 'public/css',
+            expand: true,
+            flatten: true
+        });
+        grunt.config.set('copy.appFonts', {
+            src: 'build/intermediates/fonts/**/*',
+            dest: packageRoot + 'public/fonts',
+            expand: true,
+            flatten: true
+        });
+        
+        grunt.task.run(['copy:app', 'copy:appNodeModules', 
+                        'copy:appHtml', 'copy:appJs', 'copy:appCss',
+                        'copy:appFonts']);
+    });
 
-    // TODO: can't store pid in zePid because it seems to get erased in between invocations
-    // of grunt. Find a different way.
-
-    var nodePid = null;
-    grunt.registerTask('app', 'restart node app', function() {
-        console.log("********** RESTARTING THE SERVER **********");
-        if (nodePid) {
-            console.log('killing old node process (nodePid ' + nodePid + ')');
-            shell.exec('kill ' + nodePid);
-        }
-        var f = shell.exec('node app.js', { async: true });
-        nodePid = f._handle.pid;
-        console.log('new node process has pid ' + f._handle.pid);
-        console.log("********** RESTARTED THE SERVER **********");
+    /*************************************************************************/
+    // Node
+    /*************************************************************************/
+    grunt.loadNpmTasks('grunt-express-server');
+    grunt.config.set('express', {
+        dev: {
+            options: {
+                script: 'build/appPackage/app.js',
+                port: 3000,
+                background: true
+            },
+        },
     });
 
     /*************************************************************************/
     // Watch
     /*************************************************************************/
-
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.config('watch', {
-        code: {
-            files: ['src/**/*', 'ext/**/*', 'Gruntfile.js', './*-app.js'],
-            tasks: ['default'],
-            options: { atBegin: true }
-        },
-        ext: {
-            files: [path.join('src/client/ext/**/*.*')],
-            tasks: ['default'],
+        local: {
+            files: ['src/client/js/**/*', 'src/client/less/**/*', 'src/client/templates/**/*',
+                    'src/shared/js/**/*', 'ext/**/*', 'Gruntfile.js'],
+            tasks: ['clean', 'build'],
+            options: {
+                atBegin: true
+            }
         },
         app: {
-            files: 'app.js',
-            tasks: ['app'],
+            files: ['src/server/**/*'],
+            tasks: ['packageApp', 'express:dev'],
             options: {
                 atBegin: true,
                 nospawn: true
             }
         }
-    });
+    });
 
     /*************************************************************************/
     // Github Pages                                                           
@@ -161,5 +217,8 @@ module.exports = function(grunt) {
         src: ['**']
     });
 
-    grunt.registerTask('default', [ 'clean', 'less', 'copy', 'jst', 'concat' ]);
+    /*************************************************************************/
+
+    grunt.registerTask('build', ['less', 'copy', 'jst', 'react', 'concat', 'packageApp'])
+    grunt.registerTask('default', ['clean', 'build']);
 };
