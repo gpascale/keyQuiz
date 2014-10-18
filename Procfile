@@ -1,0 +1,1 @@
+web: node www/appPackage/app.js
