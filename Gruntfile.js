@@ -7,7 +7,7 @@ module.exports = function(grunt) {
     // Clean
     /*************************************************************************/
     grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.config('clean', [ 'build' ]);
+    grunt.config('clean', [ 'www' ]);
 
     /*************************************************************************/
     // Less - Compile less files and move to the intermediates folder
@@ -16,7 +16,7 @@ module.exports = function(grunt) {
     grunt.config('less', {
         all: {
             files: {
-                'build/intermediates/css/KeyQuiz.css': 'src/client/less/*.less',
+                'www/intermediates/css/KeyQuiz.css': 'src/client/less/*.less',
             }   
         },
         options: {
@@ -35,7 +35,7 @@ module.exports = function(grunt) {
                 expand: true,
                 cwd: 'src/client/js',
                 src: ['**/*.{js,jsx}'],
-                dest: 'build/intermediates/js/client',
+                dest: 'www/intermediates/js/client',
                 ext: '.js'
             } ]
         }
@@ -56,7 +56,7 @@ module.exports = function(grunt) {
                 templateSettings: { variable: 'data' }
             },
             files: {
-                "build/intermediates/js/client/templates.js": ["src/client/templates/*.tmpl"]
+                "www/intermediates/js/client/templates.js": ["src/client/templates/*.tmpl"]
             }
         }
     });
@@ -68,19 +68,19 @@ module.exports = function(grunt) {
     grunt.config('copy', {
         fonts: {
             src: 'ext/fonts/*',
-            dest: 'build/intermediates/fonts/',
+            dest: 'www/intermediates/fonts/',
             expand: true,
             flatten: true
         },
         srcmaps: {
             src: 'ext/js/*.map',
-            dest: 'build/intermediates/js/client/',
+            dest: 'www/intermediates/js/client/',
             expand: true,
             flatten: true
         },
         sharedjs: {
             src: 'src/shared/js/**/*.js',
-            dest: 'build/intermediates/js/server/',
+            dest: 'www/intermediates/js/server/',
             expand: true,
             flatten: true  
         }
@@ -99,7 +99,7 @@ module.exports = function(grunt) {
                    'ext/js/backbone-min.js',
                    'ext/js/backbone.marionette.min.js',
                    'ext/js/react-0.11.1.min.jsq' ],
-            dest: 'build/intermediates/js/client/KeyQuiz.external.js'
+            dest: 'www/intermediates/js/client/KeyQuiz.external.js'
         },
         extCss: {
             src: [ 'ext/css/bootstrap.min.css',
@@ -107,11 +107,11 @@ module.exports = function(grunt) {
                    'ext/css/bootstrap.min.css.map',
                    'ext/css/bootstrap-theme.min.css.map',
                    'ext/css/font-awesome.min.css' ],
-            dest: 'build/intermediates/css/KeyQuiz.external.css'
+            dest: 'www/intermediates/css/KeyQuiz.external.css'
         },
         js: {
-            src: ['build/intermediates/js/client/templates.js', 'src/shared/js/**/*.js', 'src/client/js/**/*.js',],
-            dest: 'build/intermediates/js/client/KeyQuiz.js',
+            src: ['www/intermediates/js/client/templates.js', 'src/shared/js/**/*.js', 'src/client/js/**/*.js',],
+            dest: 'www/intermediates/js/client/KeyQuiz.js',
             options: {
                 banner: banner,
                 separator: '\n' + footer + banner,
@@ -125,9 +125,9 @@ module.exports = function(grunt) {
     /*************************************************************************/
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.registerTask('packageApp', function() {
-        var packageRoot = 'build/appPackage/'
+        var packageRoot = 'www/appPackage/'
         grunt.config.set('copy.app', {
-            src: [ 'src/server/app.js', 'src/server/package.json', 'build/intermediates/js/server/*.js' ],
+            src: [ 'src/server/app.js', 'src/server/package.json', 'www/intermediates/js/server/*.js' ],
             dest: packageRoot,
             expand: true,
             flatten: true
@@ -145,19 +145,19 @@ module.exports = function(grunt) {
             flatten: true
         });
         grunt.config.set('copy.appJs', {
-            src: 'build/intermediates/js/client/*',
+            src: 'www/intermediates/js/client/*',
             dest: packageRoot + 'public/js',
             expand: true,
             flatten: true
         });
         grunt.config.set('copy.appCss', {
-            src: 'build/intermediates/**/*{.css,.css.map}',
+            src: 'www/intermediates/**/*{.css,.css.map}',
             dest: packageRoot + 'public/css',
             expand: true,
             flatten: true
         });
         grunt.config.set('copy.appFonts', {
-            src: 'build/intermediates/fonts/**/*',
+            src: 'www/intermediates/fonts/**/*',
             dest: packageRoot + 'public/fonts',
             expand: true,
             flatten: true
@@ -175,7 +175,7 @@ module.exports = function(grunt) {
     grunt.config.set('express', {
         dev: {
             options: {
-                script: 'build/appPackage/app.js',
+                script: 'www/appPackage/app.js',
                 port: 3000,
                 background: true
             },
@@ -190,7 +190,7 @@ module.exports = function(grunt) {
         local: {
             files: ['src/client/js/**/*', 'src/client/less/**/*', 'src/client/templates/**/*',
                     'src/shared/js/**/*', 'ext/**/*', 'Gruntfile.js'],
-            tasks: ['clean', 'build'],
+            tasks: ['clean', 'www'],
             options: {
                 atBegin: true
             }
@@ -219,6 +219,6 @@ module.exports = function(grunt) {
 
     /*************************************************************************/
 
-    grunt.registerTask('build', ['less', 'copy', 'jst', 'react', 'concat', 'packageApp'])
-    grunt.registerTask('default', ['clean', 'build']);
+    grunt.registerTask('www', ['less', 'copy', 'jst', 'react', 'concat', 'packageApp'])
+    grunt.registerTask('default', ['clean', 'www']);
 };
